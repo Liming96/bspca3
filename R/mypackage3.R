@@ -111,10 +111,10 @@ pre_spca3 <- function(Xp,sparsity,lambda,bess_tol=1e-3,bess_maxiter=100){
   #初始化
   w <- rep(1/p,p)#随机产生长度为p的正态分布数据，对w进行初始化
   for(j in 1:p){
-    residual[j] <- (lambda*w[j]-t(Xp[,j])%*%Xp%*%w)/(n-lambda)
+    residual[j] <- (lambda*w[j]-t(Xp[,j])%*%Xp%*%w)/(t(Xp[,j])%*%Xp[,j]-lambda)
   }#初始化残差向量
   for(j in 1:p){
-    sacrifice[j] <- (lambda-n)*(w[j]+residual[j])^2
+    sacrifice[j] <- (lambda-t(Xp[,j])%*%Xp[,j])*(w[j]+residual[j])^2
   }#初始化residual
   m <- sort(sacrifice,decreasing=T)
   active <- sacrifice >= m[sparsity]#初始化活跃集和非活跃集
@@ -123,7 +123,7 @@ pre_spca3 <- function(Xp,sparsity,lambda,bess_tol=1e-3,bess_maxiter=100){
   svd_act <- svd(Xp[,active,drop=FALSE])
   w[active] <- svd_act$v[,1]
 
-  obj_old <- -Inf #最开始目标函数的值
+  obj_old <- 0 #最开始目标函数的值
   ii <- 0
 
   while(ii <= bess_maxiter){
